@@ -1,11 +1,11 @@
-# MozJpeg-wapper
-Wapper for mozjpeg in C#. The most complete wapper in pure managed C#.
+# MozJpeg-wrapper
+The most complete MozJpeg wrapper in pure managed C#.
 
-Exposes decoding API, encoding API and information API via turbojpeg compatible API. info of any JPEG file). In the future I´ll update for expose more advanced Decoding API.
+Exposes decoding API, encoding API and information API via turbojpeg-compatible API info for any JPEG file). In the future I'll update to expose more advanced Decoding API.
 
-The wapper are in safe managed code in one class. No need external dll except turbojpeg_x32.dll and turbojpeg_x64.dll (included v3.2). The wapper work in 32, 64 bit or ANY system (automatic select the apropiate library.
+The wrapper is in safe managed code in one class. No need for external dll except turbojpeg_x32.dll and turbojpeg_x64.dll (included v3.2). The wrapper work in 32, 64 bit or ANY system (automatic select the apropiate library.
 
-The code are full comented and include simple example for using the wapper.
+The code is fully commented and includes a simple example for using the wrapper.
 
 ## Use
 Load JPEG image for JPEG file
@@ -27,7 +27,7 @@ using (clsWebP mozJpeg = new rawJpeg())
 	  this.pictureBox.Image = mozJpeg.Decode(rawJpeg);
 ```
 
-Encode bitmap to byte array with quality 75, without JFIF, whith accurate DCT, optimize scan and tuned for MS-SSIM (maximum compression and minimum size)
+Encode bitmap to byte array with quality 75, without JFIF, with accurate DCT, optimized scan and tuned for MS-SSIM (maximum compression and minimum size)
 ```C#
 byte[] rawJpeg;
 using (MozJpeg mozJpeg = new MozJpeg())
@@ -44,5 +44,5 @@ using (clsWebP mozJpeg = new rawJpeg())
 		                out verticalResolution, out subsampl, out colorspace);
 ```
 
-## Thanks to pornel by his amazing code.
-Without his work this wapper would not have been possible.
+## Thanks to pornel for his amazing code.
+Without his work this wrapper would not have been possible.
