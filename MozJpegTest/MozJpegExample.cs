@@ -92,14 +92,14 @@ namespace MozJpegTest
                 File.WriteAllBytes(fileName, rawJpeg);
                 MessageBox.Show("Made " + fileName);
 
-                //Test encode lossly mode in memory with quality 75, with JFIF and optimize1
+                //Test encode lossly mode in memory with quality 75, with JFIF in grayscale
                 fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Grayscale.jpg");
                 using (MozJpeg mozJpeg = new MozJpeg())
                     rawJpeg = mozJpeg.Encode(bmp, 75, true, TJFlags.NONE, TJSubsamplingOptions.TJSAMP_GRAY);
                 File.WriteAllBytes(fileName, rawJpeg);
                 MessageBox.Show("Made " + fileName);
 
-                //Test encode lossly mode in memory with quality 75, with JFIF and optimize1
+                //Test encode lossly mode in memory with quality 75, with JFIF and optimize scan
                 fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Optimize1.jpg");
                 using (MozJpeg mozJpeg = new MozJpeg())
                     rawJpeg = mozJpeg.Encode(bmp, 75, true, TJFlags.DC_SCAN_OPT2);
