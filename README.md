@@ -3,7 +3,7 @@ The most complete MozJpeg wrapper in pure managed C#.
 
 Exposes decoding API, encoding API and information API via turbojpeg-compatible API info for any JPEG file). In the future I'll update to expose more advanced Decoding API.
 
-The wrapper is in safe managed code in one class. No need for external dll except turbojpeg_x32.dll and turbojpeg_x64.dll (included v3.2). The wrapper work in 32, 64 bit or ANY system (automatic select the apropiate library.
+The wrapper is in safe managed code in one class. No need for external dll except turbojpeg_x86.dll and turbojpeg_x64.dll (included v3.2). The wrapper work in 32, 64 bit or ANY system (automatic select the apropiate library).
 
 The code is fully commented and includes a simple example for using the wrapper.
 
@@ -46,3 +46,4 @@ using (clsWebP mozJpeg = new rawJpeg())
 
 ## Thanks to pornel for his amazing code.
 Without his work this wrapper would not have been possible.
+
