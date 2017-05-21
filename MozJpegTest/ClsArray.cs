@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ClsArray
 {
@@ -6,14 +7,14 @@ namespace ClsArray
     {
         static readonly int[] Empty = new int[0];
 
-        public static int[] Locate(ref byte[] self, byte[] candidate)
+        public static List<int> Locate(ref byte[] self, byte[] candidate)
         {
             try
             {
-                if (IsEmptyLocate(self, candidate))
-                    return Empty;
+                List<int> list = new List<int>();
 
-                var list = new List<int>();
+                if (IsEmptyLocate(self, candidate))
+                    return list;
 
                 for (int i = 0; i < self.Length; i++)
                 {
@@ -23,9 +24,10 @@ namespace ClsArray
                     list.Add(i);
                 }
 
-                return list.Count == 0 ? Empty : list.ToArray();
+                //return list.Count == 0 ? Empty : list.ToArray();
+                return list;
             }
-            catch { throw; }
+            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn clsArray.Locate"); }
         }
 
         private static bool IsMatch(byte[] array, int position, byte[] candidate)
@@ -41,7 +43,7 @@ namespace ClsArray
 
                 return true;
             }
-            catch { throw; }
+            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn clsArray.IsMatch"); }
         }
 
         private static bool IsEmptyLocate(byte[] array, byte[] candidate)
@@ -54,7 +56,7 @@ namespace ClsArray
                     || candidate.Length == 0
                     || candidate.Length > array.Length;
             }
-            catch { throw; }
+            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn clsArray.IsEmptyLocate"); }
         }
     }
 }
