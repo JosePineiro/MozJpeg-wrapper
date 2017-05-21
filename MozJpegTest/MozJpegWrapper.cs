@@ -1,4 +1,5 @@
-﻿/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿using ClsArray;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Wrapper for MozJpeg in C#. (GPL) by Jose M. Piñeiro
 /// v1.0.0.0
 /// Derivated from https://bitbucket.org/Sergey_Terekhin/as.turbojpegwrapper
@@ -14,16 +15,11 @@
 /// GetInfo - Get information of JPEG data (in byte array) 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Diagnostics;
-using System.Windows.Forms;
-using ClsArray;
 
 namespace MozJpegWrapper
 {
@@ -135,28 +131,10 @@ namespace MozJpegWrapper
                     throw new Exception("Can`t decode JPEG. Bad o unknow format.");
 
                 //Get pixels per inch
-                int[] jfif = clsArray.Locate(ref rawJpeg, new byte[] { 0x4a, 0x46, 0x49, 0x46, 0x00 }); //JFIF" in ASCII, terminated by a null byte
-                if (jfif.Length == 1)
-                {
-                    float horizontalResolution;
-                    float verticalResolution;
-                    switch (rawJpeg[jfif[0] + 7])
-                    {
-                        case 0x01:      // Resolution in Pixel Per Inch
-                            horizontalResolution = rawJpeg[jfif[0] + 8] * 256 + rawJpeg[jfif[0] + 9];
-                            verticalResolution = rawJpeg[jfif[0] + 10] * 256 + rawJpeg[jfif[0] + 11];
-                            break;
-                        case 0x02:      // Resolution in Pixel Per Centimeter
-                            horizontalResolution = (rawJpeg[jfif[0] + 8] * 256 + rawJpeg[jfif[0] + 9]) * 2.54F;
-                            verticalResolution = (rawJpeg[jfif[0] + 10] * 256 + rawJpeg[jfif[0] + 11]) * 2.54F;
-                            break;
-                        default:        // No resolution information or bad JFIF
-                            horizontalResolution = 96;
-                            verticalResolution = 96;
-                            break;
-                    }
-                    bmp.SetResolution(horizontalResolution, verticalResolution);
-                }
+                float horizontalResolution;
+                float verticalResolution;
+                GetPixelsPerInch(ref rawJpeg, out horizontalResolution, out verticalResolution);
+                bmp.SetResolution(horizontalResolution, verticalResolution);
 
                 return bmp;
             }
@@ -200,26 +178,7 @@ namespace MozJpegWrapper
                     throw new Exception("Can`t decode JPEG. Bad o unknow format.");
 
                 //Get pixels per inch
-                int[] jfif = clsArray.Locate(ref rawJpeg, new byte[] { 0x4a, 0x46, 0x49, 0x46, 0x00 }); //JFIF" in ASCII, terminated by a null byte
-                if (jfif.Length == 1)
-                {
-                    switch (rawJpeg[jfif[0] + 7])
-                    {
-                        case 0x01:      // Resolution in Pixel Per Inch
-                            horizontalResolution = rawJpeg[jfif[0] + 8] * 256 + rawJpeg[jfif[0] + 9];
-                            verticalResolution = rawJpeg[jfif[0] + 10] * 256 + rawJpeg[jfif[0] + 11];
-                            break;
-                        case 0x02:      // Resolution in Pixel Per Centimeter
-                            horizontalResolution =(rawJpeg[jfif[0] + 8] * 256 + rawJpeg[jfif[0] + 9]) * 2.54F;
-                            verticalResolution = (rawJpeg[jfif[0] + 10] * 256 + rawJpeg[jfif[0] + 11]) * 2.54F;
-                            break;
-                        default:        // No resolution information or bad JFIF
-                            horizontalResolution = 96;
-                            verticalResolution = 96;
-                            break;
-                    }
-                }
-
+                GetPixelsPerInch(ref rawJpeg, out horizontalResolution, out verticalResolution);
             }
             catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn MozJpeg.GetInfo"); }
             finally
@@ -322,13 +281,43 @@ namespace MozJpegWrapper
         #endregion
 
         #region | Private Functions |
+                        //Get pixels per inch
+        private void GetPixelsPerInch(ref byte[] rawJpeg, out float horizontalResolution, out float verticalResolution)
+        {
+            try
+            {
+                //Default resolution
+                horizontalResolution = 96;
+                verticalResolution = 96;
+
+                int[] jfif = clsArray.Locate(ref rawJpeg, new byte[] { 0x4a, 0x46, 0x49, 0x46, 0x00 }).ToArray(); //JFIF" in ASCII, terminated by a null byte
+                if (jfif.Length == 1)
+                {
+                    switch (rawJpeg[jfif[0] + 7])
+                    {
+                        case 0x01:      // Resolution in Pixel Per Inch
+                            horizontalResolution = rawJpeg[jfif[0] + 8] * 256 + rawJpeg[jfif[0] + 9];
+                            verticalResolution = rawJpeg[jfif[0] + 10] * 256 + rawJpeg[jfif[0] + 11];
+                            break;
+                        case 0x02:      // Resolution in Pixel Per Centimeter
+                            horizontalResolution = (rawJpeg[jfif[0] + 8] * 256 + rawJpeg[jfif[0] + 9]) * 2.54F;
+                            verticalResolution = (rawJpeg[jfif[0] + 10] * 256 + rawJpeg[jfif[0] + 11]) * 2.54F;
+                            break;
+                        default:        // No resolution information or bad JFIF
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex) { throw new Exception(ex.Message + "\r\nIn MozJpeg.GetPixelsPerInch"); }
+        }
+
         /// <summary>
         /// Converts pixel format from <see cref="PixelFormat"/> to <see cref="TJPixelFormats"/>
         /// </summary>
         /// <param name="pixelFormat">Pixel format to convert</param>
         /// <returns>Converted value of pixel format or exception if convertion is impossible</returns>
         /// <exception cref="NotSupportedException">Convertion can not be performed</exception>
-        private static TJPixelFormats ConvertPixelFormat(PixelFormat pixelFormat)
+        private TJPixelFormats ConvertPixelFormat(PixelFormat pixelFormat)
         {
             switch (pixelFormat)
             {
@@ -366,7 +355,7 @@ namespace MozJpegWrapper
                     throw new InvalidOperationException("Invalid platform. Can not find proper function");
             }
         }
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjInitCompress")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjInitCompress")]
         private static extern IntPtr tjInitCompress_x86();
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjInitCompress")]
         private static extern IntPtr tjInitCompress_x64();
@@ -421,7 +410,7 @@ namespace MozJpegWrapper
             }
         }
 
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjCompress2")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjCompress2")]
         private static extern int tjCompress2_x86(IntPtr handle, IntPtr srcBuf, int width, int pitch, int height, int pixelFormat, ref IntPtr jpegBuf, ref ulong jpegSize, int jpegSubsamp, int jpegQual, int flags);
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjCompress2")]
         private static extern int tjCompress2_x64(IntPtr handle, IntPtr srcBuf, int width, int pitch, int height, int pixelFormat, ref IntPtr jpegBuf, ref ulong jpegSize, int jpegSubsamp, int jpegQual, int flags);
@@ -442,7 +431,7 @@ namespace MozJpegWrapper
                     throw new InvalidOperationException("Invalid platform. Can not find proper function");
             }
         }
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjInitDecompress")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjInitDecompress")]
         private static extern IntPtr tjInitDecompress_x86();
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjInitDecompress")]
         private static extern IntPtr tjInitDecompress_x64();
@@ -475,7 +464,7 @@ namespace MozJpegWrapper
                     throw new InvalidOperationException("Invalid platform. Can not find proper function");
             }
         }
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressHeader3")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressHeader3")]
         private static extern int tjDecompressHeader3_x86(IntPtr handle, IntPtr jpegBuf, uint jpegSize, out int width, out int height, out TJSubsamplingOptions jpegSubsamp, out TJColorSpaces jpegColorspace);
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressHeader3")]
         private static extern int tjDecompressHeader3_x64(IntPtr handle, IntPtr jpegBuf, ulong jpegSize, out int width, out int height, out TJSubsamplingOptions jpegSubsamp, out TJColorSpaces jpegColorspace);
@@ -525,7 +514,7 @@ namespace MozJpegWrapper
             }
         }
 
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompress2")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompress2")]
         private static extern int tjDecompress2_x86(IntPtr handle, IntPtr jpegBuf, uint jpegSize, IntPtr dstBuf, int width, int pitch, int height, int pixelFormat, int flags);
 
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompress2")]
@@ -565,7 +554,7 @@ namespace MozJpegWrapper
                     throw new InvalidOperationException("Invalid platform. Can not find proper function");
             }
         }
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressToYUVPlanes")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressToYUVPlanes")]
         private static extern int tjDecompressToYUVPlanes_x86(IntPtr handle, IntPtr jpegBuf, uint jpegSize, IntPtr[] dstPlanes, int width, int[] strides, int height, int flags);
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDecompressToYUVPlanes")]
         private static extern int tjDecompressToYUVPlanes_x64(IntPtr handle, IntPtr jpegBuf, ulong jpegSize, IntPtr[] dstPlanes, int width, int[] strides, int height, int flags);
@@ -591,7 +580,7 @@ namespace MozJpegWrapper
                     throw new InvalidOperationException("Invalid platform. Can not find proper function");
             }
         }
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjPlaneSizeYUV")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjPlaneSizeYUV")]
         private static extern int tjPlaneSizeYUV_x86(int componentID, int width, int stride, int height, TJSubsamplingOptions subsamp);
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjPlaneSizeYUV")]
         private static extern int tjPlaneSizeYUV_x64(int componentID, int width, int stride, int height, TJSubsamplingOptions subsamp);
@@ -617,7 +606,7 @@ namespace MozJpegWrapper
                     throw new InvalidOperationException("Invalid platform. Can not find proper function");
             }
         }
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjAlloc")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjAlloc")]
         public static extern IntPtr tjAlloc_x86(int bytes);
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjAlloc")]
         public static extern IntPtr tjAlloc_x64(int bytes);
@@ -645,7 +634,7 @@ namespace MozJpegWrapper
                     throw new InvalidOperationException("Invalid platform. Can not find proper function");
             }
         }
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjFree")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjFree")]
         private static extern void tjFree_x86(IntPtr buffer);
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjFree")]
         private static extern void tjFree_x64(IntPtr buffer);
@@ -667,7 +656,7 @@ namespace MozJpegWrapper
                     throw new InvalidOperationException("Invalid platform. Can not find proper function");
             }
         }
-        [DllImport("turbojpeg_x32.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDestroy")]
+        [DllImport("turbojpeg_x86.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDestroy")]
         private static extern int tjDestroy_x86(IntPtr handle);
         [DllImport("turbojpeg_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tjDestroy")]
         private static extern int tjDestroy_x64(IntPtr handle);
