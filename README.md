@@ -1,5 +1,5 @@
 # MozJpeg-wrapper
-The most complete MozJpeg wrapper in pure managed C#.
+The most complete MozJpeg .NET wrapper in pure managed C#.
 
 Exposes decoding API, encoding API and information API via turbojpeg-compatible API info for any JPEG file). In the future I'll update to expose more advanced Decoding API.
 
